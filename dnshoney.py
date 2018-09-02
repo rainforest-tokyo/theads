@@ -8,6 +8,8 @@ import ipaddress
 from scapy.all import *
 from netfilterqueue import NetfilterQueue
 
+from Logger import Logger
+
 def fake_dns_reply(pkt, qname):
     ip = IP()
     udp = UDP()
@@ -26,6 +28,8 @@ def fake_dns_reply(pkt, qname):
     send(ip/udp/dns)
 
 def dnshoney(pkt):
+    global logger
+
     packet = IP(pkt.get_payload())
     proto = packet.proto
 
@@ -35,6 +39,11 @@ def dnshoney(pkt):
             pkt.drop()
             dns = packet[UDP].payload
             qname = dns[DNSQR].qname
+
+            data = {"ip":packet.src, "qname":qname}
+            print( data )
+            log.log( data )
+
             fake_dns_reply(packet, qname)
         else :
             pkt.accept()
@@ -43,13 +52,20 @@ def dnshoney(pkt):
         pass
 #----------------------------
 
-if __name__ == '__main__':
+def main(argv) :
+    global logger
+
+    logger = Logger("/var/log/theads.log", False)
+
     nfqueue = NetfilterQueue()
-    nfqueue.bind(1, dnshoney)
+    nfqueue.bind(2, dnshoney)
     try:
         nfqueue.run()
     except KeyboardInterrupt:
         print('')
 
     nfqueue.unbind()
+
+if __name__ == '__main__':
+    main(sys.argv)
 
