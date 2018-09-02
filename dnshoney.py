@@ -1,15 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#-----------------------------------
-# theads 
-#
-# Copyright (c) 2018 RainForest
-#
-# This software is released under the MIT License.
-# http://opensource.org/licenses/mit-license.php
-#-----------------------------------
-
 import os
 import json
 import ipaddress
@@ -32,23 +23,23 @@ def fake_dns_reply(pkt, qname):
     dns.an = DNSRR(rrname = qname, ttl = 257540, rdlen = 4, rdata = solved_ip)
     dns.ns = DNSRR(rrname = qname, ttl = 257540, rdlen = 4, rdata = solved_ip)
     dns.ar = DNSRR(rrname = qname, ttl = 257540, rdlen = 4, rdata = solved_ip)
-    print "Sending the fake DNS reply to %s:%s" % (ip.dst, udp.dport)
     send(ip/udp/dns)
 
 def dnshoney(pkt):
     packet = IP(pkt.get_payload())
-    pkt.drop()
+    proto = packet.proto
 
     if proto is 0x11:
         # Check if it is a DNS packet (raw check)
-        if pkt[UDP].dport is 53:
-            print "It's a DNS request"
-            #dns = pkt[UDP].payload
-            #qname = dns[DNSQR].qname
-            #print "Sir Ping is requesting for %s" % qname
-            #fake_dns_reply(pkt, qname)
+        if packet[UDP].dport is 53:
+            pkt.drop()
+            dns = packet[UDP].payload
+            qname = dns[DNSQR].qname
+            fake_dns_reply(packet, qname)
+        else :
+            pkt.accept()
     else:
-        print "Protocol not handled!!"
+        pkt.accept()
         pass
 #----------------------------
 
