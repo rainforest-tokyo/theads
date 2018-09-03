@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #-----------------------------------
-# AutoNaptPython 
+# theads 
 #
 # Copyright (c) 2018 RainForest
 #
