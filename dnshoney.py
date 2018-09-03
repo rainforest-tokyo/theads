@@ -31,6 +31,7 @@ def dnshoney(pkt):
     global logger
 
     packet = IP(pkt.get_payload())
+    print(packet)
     proto = packet.proto
 
     if proto is 0x11:
@@ -42,7 +43,8 @@ def dnshoney(pkt):
 
             data = {"ip":packet.src, "qname":qname}
             print( data )
-            log.log( data )
+            sys.stdout.flush()
+            logger.log( data )
 
             fake_dns_reply(packet, qname)
         else :
@@ -55,6 +57,8 @@ def dnshoney(pkt):
 def main(argv) :
     global logger
 
+    print( '#### START ####' )
+    sys.stdout.flush()
     logger = Logger("/var/log/theads.log", False)
 
     nfqueue = NetfilterQueue()
